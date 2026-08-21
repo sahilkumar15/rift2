@@ -1,0 +1,219 @@
+# RIFT-v2 detector training config
+# This file preserves the dataset structure/paths supplied for the project.
+# The detector-training stage is separate from the RIFT audit stage.
+
+seed: 3407
+experiment:
+  name: rift_v2_detector_mixed
+  root_dir: experiments
+
+# -----------------------------------------------------------------------------
+# DATASET
+# -----------------------------------------------------------------------------
+dataset:
+  name: "mixed"                 # SWITCH: "ffpp_rela" | "mixed"
+
+  mixed:
+    total_per_epoch: 100000
+
+    # Active-domain weights are automatically normalized over the uncommented set.
+    domains:
+      - name: ffpp_rela
+        weight: 0.99
+        config_key: ffpp_rela
+        split: train
+
+      - name: celeb_df
+        weight: 0.07
+        config_key: celeb_df_train
+        split: train
+
+      - name: dfd
+        weight: 0.12
+        config_key: dfd_train
+        split: train
+
+      - name: wild_deepfake
+        weight: 0.05
+        config_key: wild_deepfake_train
+        split: train
+
+      - name: diffswap
+        weight: 0.001
+        config_key: diffswap_train
+        split: train
+
+  ffpp_rela:
+    data_root: "/scratch/sahil/projects/img_deepfake/datasets/ffpp"
+    data_types: ""
+    compressions: "c23"
+    num_frames: 50
+    methods: ["youtube", "Deepfakes", "Face2Face", "FaceSwap", "NeuralTextures"]
+    has_mask: false
+    balance: true
+    relation_data: true
+    similarity: false
+    similarity_path: null
+    use_splits: true
+    strict_splits: true
+    splits_dirname: "splits"
+    csv_dirname: "split_csv2"
+    random_patch: null
+
+  celeb_df_train:
+    data_root: "/scratch/sahil/projects/img_deepfake/datasets/celebdf"
+    num_frames: 50
+    methods: "both"
+    control: true
+    alb: true
+    split_csv: "/scratch/sahil/projects/img_deepfake/datasets/celebdf/split_csv2/celeb_df_v2_train.csv"
+    strict_csv: false
+    min_frames: 1
+    mtcnn_suffix: "-mtcnn"
+    image_size: 256
+    skip_bad_images: true
+    sbi_prob: 0.40
+    freq_aug_prob: 0.25
+    use_sbi: true
+
+  dfd_train:
+    data_root: "/scratch/sahil/projects/img_deepfake/datasets/dfd"
+    split_csv: "/scratch/sahil/projects/img_deepfake/datasets/dfd/split_csv2/dfd_train.csv"
+    num_frames: 50
+    image_size: 256
+    min_frames: 1
+    mtcnn_suffix: "-mtcnn"
+    strict_csv: false
+    skip_bad_images: true
+    methods: "both"
+    eval_k_frames_per_video: 50
+    eval_balance_classes: false
+    sbi_prob: 0.35
+    freq_aug_prob: 0.25
+    use_sbi: true
+
+  wild_deepfake_train:
+    data_root: "/scratch/sahil/projects/img_deepfake/datasets/wild_deepfake"
+    split_csv: "/scratch/sahil/projects/img_deepfake/datasets/wild_deepfake/split_csv2/wilddeepfake_train.csv"
+    image_size: 256
+    strict_csv: false
+    skip_bad_images: true
+    methods: "both"
+
+  diffswap_train:
+    data_root: "/scratch/sahil/projects/img_deepfake/datasets/diffswap"
+    split_csv: "/scratch/sahil/projects/img_deepfake/datasets/diffswap/split_csv2/diffswap_train.csv"
+    image_size: 256
+    strict_csv: false
+    skip_bad_images: true
+    methods: "both"
+
+# -----------------------------------------------------------------------------
+# VALIDATION
+# Always FF++ for in-distribution checkpoint selection.
+# -----------------------------------------------------------------------------
+val_dataset:
+  name: "ffpp_rela"
+  ffpp_rela:
+    data_root: "/scratch/sahil/projects/img_deepfake/datasets/ffpp"
+    data_types: ""
+    compressions: "c23"
+    num_frames: 50
+    methods: ["youtube", "Deepfakes", "Face2Face", "FaceSwap", "NeuralTextures"]
+    has_mask: false
+    balance: false
+    relation_data: true
+    similarity: false
+    similarity_path: null
+    use_splits: true
+    strict_splits: true
+    splits_dirname: "splits"
+    csv_dirname: "split_csv2"
+    random_patch: null
+    split: val
+
+# -----------------------------------------------------------------------------
+# TRANSFORMS
+# -----------------------------------------------------------------------------
+transform:
+  image_size: 256
+  mean: [0.5, 0.5, 0.5]
+  std:  [0.5, 0.5, 0.5]
+  aug:
+    enable: true
+    jpeg_quality:        [30, 100]
+    blur_prob:           0.25
+    noise_prob:          0.25
+    color_jitter_prob:   0.30
+    grayscale_prob:      0.08
+    random_erasing_prob: 0.15
+
+# -----------------------------------------------------------------------------
+# MODEL
+# Native detector for training detector variants used by the later RIFT audit.
+# CIFT is integrated separately as a frozen external score-access detector.
+# -----------------------------------------------------------------------------
+model:
+  name: convnext_binary
+  backbone: convnext_tiny
+  pretrained: false
+  dropout: 0.2
+
+optimizer:
+  name: adamw
+  lr: 2.0e-4
+  weight_decay: 0.05
+
+scheduler:
+  name: cosine
+  warmup_epochs: 2
+  min_lr: 1.0e-6
+
+loss:
+  pos_weight: null
+  label_smoothing: 0.0
+
+loader:
+  batch_size: 32
+  num_workers: 8
+  pin_memory: true
+  persistent_workers: true
+  prefetch_factor: 2
+  drop_last: true
+
+trainer:
+  accelerator: auto
+  devices: auto
+  strategy: auto
+  precision: bf16-mixed
+  max_epochs: 30
+  accumulate_grad_batches: 1
+  gradient_clip_val: 1.0
+  log_every_n_steps: 25
+  deterministic: false
+  benchmark: true
+  num_sanity_val_steps: 0
+
+checkpoint:
+  monitor: val/auc
+  mode: max
+  save_top_k: 3
+  save_last: true
+  filename: "best-{epoch:02d}"
+
+early_stopping:
+  enable: true
+  monitor: val/auc
+  mode: max
+  patience: 7
+  min_delta: 0.001
+
+wandb:
+  enable: true
+  project: RIFT_ICLR27
+  entity: null
+  group: detector_training
+  name: null
+  tags: [rift-v2, detector, mixed]
+  mode: online
+  log_model: false

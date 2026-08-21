@@ -1,0 +1,63 @@
+seed: 3407
+experiment:
+  name: cift_ffpp_validation
+  root_dir: experiments
+
+# Validation-only CIFT integration. RIFT itself keeps this detector frozen.
+model:
+  name: cift_external
+  mode: frozen
+  cift_root: /scratch/sahil/projects/img_deepfake/code/ImageDifussionFake
+  cift_config: configs/diffusionfake_mixed.yaml
+  cift_ckpt: /scratch/sahil/projects/img_deepfake/code/ImageDifussionFake/experiments/Mix5_AllDomains_v5/ckpt/best-eer-epoch=34.ckpt
+  backbone: convnextv2_base
+  first_stage_key: source
+  target_stage_key: target
+  control_key: hint
+  label_key: label
+
+val_dataset:
+  name: ffpp_rela
+  ffpp_rela:
+    data_root: /scratch/sahil/projects/img_deepfake/datasets/ffpp
+    compressions: c23
+    num_frames: 50
+    methods: [youtube, Deepfakes, Face2Face, FaceSwap, NeuralTextures]
+    balance: false
+    relation_data: true
+    use_splits: true
+    strict_splits: true
+    splits_dirname: splits
+    csv_dirname: split_csv2
+    split: val
+
+transform:
+  image_size: 256
+  mean: [0.5, 0.5, 0.5]
+  std: [0.5, 0.5, 0.5]
+  aug:
+    enable: false
+
+loader:
+  batch_size: 16
+  num_workers: 4
+  pin_memory: true
+  persistent_workers: true
+  prefetch_factor: 2
+  drop_last: false
+
+trainer:
+  accelerator: auto
+  devices: 1
+  strategy: auto
+  precision: bf16-mixed
+  num_sanity_val_steps: 0
+
+wandb:
+  enable: true
+  project: RIFT_ICLR27
+  entity: null
+  group: detector_validation
+  name: cift_ffpp_validation
+  tags: [rift-v2, cift, frozen]
+  mode: online

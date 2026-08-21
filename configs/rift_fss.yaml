@@ -1,0 +1,46 @@
+# New locked RIFT audit settings. No detector training occurs here.
+seed: 3407
+
+detector:
+  name: cift_external
+  cift_root: /scratch/sahil/projects/img_deepfake/code/ImageDifussionFake
+  cift_config: configs/diffusionfake_mixed.yaml
+  cift_ckpt: /scratch/sahil/projects/img_deepfake/code/ImageDifussionFake/experiments/Mix5_AllDomains_v5/ckpt/best-eer-epoch=34.ckpt
+  backbone: convnextv2_base
+
+score:
+  type: logit
+  probability_clip: 1.0e-6
+  calibration:
+    enable: false
+    temperature: 1.0
+  robust_scale:
+    lower_percentile: 5
+    upper_percentile: 95
+    eta: 1.0e-8
+
+intervention:
+  type: local_blur
+  kernel_size: 31
+  sigma: 8.0
+
+nuisances:
+  - name: jpeg
+    quality: 60
+  - name: blur
+    kernel_size: 7
+    sigma: 1.5
+  - name: resize
+    scale: 0.75
+  - name: gamma
+    gamma: 0.8
+
+fss:
+  epsilon: 1.0e-8
+
+# RL is intentionally not part of the core metric.
+# Add it only later as an optional region-search optimizer if it beats greedy/beam.
+search:
+  method: greedy
+  grid: 8
+  budget: 8
