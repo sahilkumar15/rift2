@@ -18,15 +18,9 @@
 /logs/
 /artifacts/
 
-# Keep experiment source/configuration code,
-# but ignore generated experiment artifacts
-/experiments/outputs/
-/experiments/results/
-/experiments/runs/
-/experiments/logs/
-/experiments/checkpoints/
-/experiments/weights/
-/experiments/artifacts/
+# All experiment checkpoints/logs are generated artifacts.
+# Source code lives under src/, never under experiments/.
+/experiments/
 
 # Training / tracking tools
 wandb/

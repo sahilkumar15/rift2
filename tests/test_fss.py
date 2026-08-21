@@ -1,6 +1,6 @@
 import torch
 
-from rift.audit.fss import compute_fss, harmonic_fss, robust_score_scale
+from forensic_audit.fss import compute_fss, harmonic_fss, robust_score_scale
 
 
 def test_harmonic_limits():

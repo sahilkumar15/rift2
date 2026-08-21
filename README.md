@@ -1,204 +1,262 @@
-# RIFT v2 — clean research codebase
+# RIFT v2 — flattened, modular research codebase
 
-This repository is organized around the **locked RIFT scientific story**:
-RIFT audits an **already-trained frozen detector** using score access only. The core
-quantity is Forensic Specificity Score (FSS), not reinforcement learning.
+This repository keeps the scientific separation required by the RIFT paper:
 
-## 1. Scientific separation
+- detector training is one lifecycle;
+- RIFT is a score-access audit of a frozen detector;
+- the controlled shortcut experiment is a validation experiment for forensic specificity;
+- paper table numbering is not encoded into source filenames.
 
-There are two deliberately separate lifecycles:
+The old `src/rift/...` namespace has been removed. All importable packages now live directly under `src/` with collision-safe, purpose-specific names.
 
-1. **Detector lifecycle** — train/validate detector variants. This is where the
-   mixed-domain YAML, PyTorch Lightning Trainer, checkpoints, AUC/EER, and W&B live.
-2. **RIFT lifecycle** — freeze one detector checkpoint and audit it using paired
-   authenticity-changing vs authenticity-preserving interventions. RIFT itself does
-   not fine-tune the detector and does not need gradients or internal features.
-
-This separation prevents the implementation from accidentally turning RIFT into a
-new detector-training method.
-
-## 2. Current project tree
+## Repository layout
 
 ```text
-rift-v2/
+rift2/
 ├── configs/
-│   ├── train_detector_mixed.yaml  # exact dataset structure/paths from the project
-│   ├── validate_cift.yaml         # frozen CIFT score-access validation
-│   └── rift_fss.yaml              # locked M/Q/FSS audit settings
-├── scripts/
+│   ├── controlled_forensic_audit/
+│   │   ├── detector.yaml
+│   │   └── audit.yaml
+│   ├── rift_fss.yaml
+│   ├── train_detector_mixed.yaml
+│   └── validate_cift.yaml
+│
+├── scripts/                         # shell launchers only
 │   ├── preflight.sh
 │   ├── train_detector.sh
-│   └── validate_cift.sh
-├── src/rift/
-│   ├── config.py
-│   ├── preflight.py
-│   ├── train.py
-│   ├── validate.py
-│   ├── data/
-│   │   ├── ffpp_relation.py       # real FF++ donor/target pairing
-│   │   ├── csv_dataset.py         # CelebDF/DFD/Wild/DiffSwap CSV contract
-│   │   ├── mixed.py               # weighted, auto-normalized domain mixture
-│   │   ├── factory.py
+│   ├── validate_cift.sh
+│   ├── train_controlled_detector.sh
+│   ├── prepare_forensic_gt_data.sh
+│   └── run_controlled_forensic_specificity_audit.sh
+│
+├── src/
+│   ├── project_core/
+│   │   ├── __init__.py
+│   │   ├── config.py
+│   │   ├── logging.py
+│   │   └── seed.py
+│   │
+│   ├── detector_data/
+│   │   ├── __init__.py
+│   │   ├── csv_dataset.py
 │   │   ├── datamodule.py
+│   │   ├── factory.py
+│   │   ├── ffpp_relation.py
+│   │   ├── mixed.py
 │   │   └── transforms.py
-│   ├── models/
-│   │   ├── convnext_binary.py     # clean trainable detector variant
-│   │   ├── cift_external.py       # frozen bridge to existing CIFT repo/checkpoint
-│   │   ├── tiny.py                # tests only
-│   │   └── factory.py
-│   ├── lightning/
-│   │   └── detector_module.py
-│   ├── metrics/
+│   │
+│   ├── detector_models/
+│   │   ├── __init__.py
+│   │   ├── cift_external.py
+│   │   ├── convnext_binary.py
+│   │   ├── factory.py
+│   │   └── tiny.py
+│   │
+│   ├── detector_metrics/
+│   │   ├── __init__.py
 │   │   └── binary.py
-│   └── audit/
-│       ├── score.py               # calibrated-logit score wrapper
-│       ├── interventions.py       # shared regional neutralization
-│       ├── nuisances.py           # JPEG/blur/resize/gamma
-│       └── fss.py                 # exact M, Q, FSS equations
+│   │
+│   ├── detector_training/
+│   │   ├── __init__.py
+│   │   ├── detector_module.py
+│   │   ├── train.py
+│   │   ├── validate.py
+│   │   └── preflight.py
+│   │
+│   ├── forensic_audit/              # generic RIFT score-access primitives
+│   │   ├── __init__.py
+│   │   ├── fss.py
+│   │   ├── interventions.py
+│   │   ├── nuisances.py
+│   │   └── score.py
+│   │
+│   └── controlled_forensic_audit/   # controlled proof experiment
+│       ├── __init__.py
+│       ├── data.py
+│       ├── detector.py
+│       ├── shortcut.py
+│       ├── train.py
+│       ├── prepare_forensic_gt.py
+│       └── specificity_audit/
+│           ├── __init__.py
+│           ├── cli.py
+│           ├── model.py
+│           ├── data.py
+│           ├── validation.py
+│           ├── calibration.py
+│           ├── regions.py
+│           ├── metrics.py
+│           ├── audit.py
+│           ├── aggregation.py
+│           └── reporting.py
+│
+├── experiments/                     # checkpoints; not source code
+├── results/                         # audit outputs; not source code
 └── tests/
 ```
 
-## 3. Dataset behavior
+The internal package formerly named `lightning` was intentionally renamed to `detector_training`. A top-level package named `lightning` would shadow the third-party PyTorch Lightning package after flattening `src/rift/`.
 
-`configs/train_detector_mixed.yaml` keeps the paths and structure supplied for:
-FF++, Celeb-DF-v2, DFD, WildDeepfake, and DiffSwap.
+## Install
 
-The active raw weights currently sum to `1.231`, so they are normalized to:
+```bash
+cd /scratch/sahil/projects/img_deepfake/code/rift2
+conda activate dif
+python -m pip install -e ".[logging,test]"
+```
 
-- FF++ relation: **0.804224**
-- Celeb-DF: **0.056864**
-- DFD: **0.097482**
-- WildDeepfake: **0.040617**
-- DiffSwap: **0.000812**
+## Main detector lifecycle
 
-`total_per_epoch: 100000` means exactly 100,000 training samples are drawn per
-logical epoch according to those normalized proportions.
+Preflight:
 
-### FF++ relation loader
+```bash
+./scripts/preflight.sh
+```
 
-The loader supports the standard FF++ layout and standard split JSON files:
+Train generic detector:
+
+```bash
+CUDA_VISIBLE_DEVICES=6,7,1,0 \
+./scripts/train_detector.sh
+```
+
+Validate external CIFT bridge:
+
+```bash
+CUDA_VISIBLE_DEVICES=6 \
+./scripts/validate_cift.sh
+```
+
+## Controlled detector lifecycle
+
+Train the shortcut-reliance calibration detector:
+
+```bash
+CUDA_VISIBLE_DEVICES=6,7,1,0 \
+./scripts/train_controlled_detector.sh
+```
+
+The canonical selected checkpoint is expected at:
 
 ```text
-original_sequences/youtube/c23/{images|frames}/<video_id>/...
-manipulated_sequences/<method>/c23/{images|frames}/<source>_<target>/...
-splits/train.json
-splits/val.json
-splits/test.json
+experiments/controlled_forensic_audit_2/
+└── controlled_detector/
+    └── checkpoints/
+        └── controlled_detector.ckpt
 ```
 
-For manipulated frames, the source identity is used to retrieve the donor frame.
-For genuine frames, donor = target by construction.
+`last.ckpt` is for resuming optimization. The controlled audit uses `controlled_detector.ckpt`.
 
-### Non-FF++ CSV loaders
+## Controlled Forensic Specificity Audit
 
-The generic loader accepts common aliases for image path and label columns. If a
-CSV has a donor column it is used; otherwise `relation_valid=False` is explicit.
+The proper experiment name is **Controlled Forensic Specificity Audit**. The source code does not use `table1` in filenames because table numbering can change during paper revision.
 
-The YAML keys `use_sbi`, `sbi_prob`, and `freq_aug_prob` are preserved because they
-belong to the existing CIFT data configuration. The clean generic loader **does not
-silently implement an approximate SBI**. If exact SBI/Frequency-Blender synthesis
-is required, wire the original implementation as a dataset plugin instead.
+Configuration:
 
-## 4. Metrics during detector training/validation
+```text
+configs/controlled_forensic_audit/audit.yaml
+```
 
-The first stage logs:
+The complete pipeline is:
 
-| Metric | Purpose |
-|---|---|
-| `train/loss`, `val/loss` | optimization and overfitting diagnosis |
-| `val/auc` | primary threshold-free checkpoint metric |
-| `val/eer` | error trade-off at the equal-error operating point |
-| `val/ap` | useful when the real/fake distribution is imbalanced |
-| `val/acc` | simple sanity metric, not the headline metric |
-| `val/ece` | calibration error; relevant before later logit/FSS auditing |
-| `val/brier` | probability calibration/sharpness sanity check |
+```text
+frozen controlled detector
+        ↓
+2×2 validation on FF++ validation
+        ↓
+validation-only score-scale calibration
+        ↓
+Forensic-GT paired audit
+        ↓
+frame → video-group → manipulation-method aggregation
+        ↓
+stratified video-group bootstrap
+        ↓
+LaTeX controlled-evidence table
+```
 
-Checkpoint selection uses **FF++ validation AUC only**. OOD datasets should not be
-used for checkpoint selection; they are held for the later generalization study.
-
-## 5. Install
+Run every stage:
 
 ```bash
-cd /scratch/sahil/projects/img_deepfake/code/rift-v2
-conda activate dif
-pip install -e ".[logging,test]"
-wandb login
+CUDA_VISIBLE_DEVICES=6 \
+./scripts/run_controlled_forensic_specificity_audit.sh all
 ```
 
-## 6. Preflight
+Or run one stage at a time:
 
 ```bash
-bash scripts/preflight.sh
+CUDA_VISIBLE_DEVICES=6 ./scripts/run_controlled_forensic_specificity_audit.sh validate
+CUDA_VISIBLE_DEVICES=6 ./scripts/run_controlled_forensic_specificity_audit.sh calibrate
+CUDA_VISIBLE_DEVICES=6 ./scripts/run_controlled_forensic_specificity_audit.sh audit
+./scripts/run_controlled_forensic_specificity_audit.sh aggregate
+./scripts/run_controlled_forensic_specificity_audit.sh report
 ```
 
-To inspect only the normalized mix without checking Katz paths:
+Expected result files:
 
-```bash
-python -m rift.preflight --config configs/train_detector_mixed.yaml --skip-paths
+```text
+results/controlled_forensic_specificity_audit/
+├── resolved_audit_config.yaml
+├── detector_validation.json
+├── detector_calibration.json
+├── forensic_specificity_per_sample.csv
+├── forensic_specificity_video_group.csv
+├── forensic_specificity_by_method.csv
+├── forensic_specificity_summary.csv
+├── forensic_specificity_bootstrap.json
+└── controlled_forensic_specificity_audit.tex
 ```
 
-## 7. Train a detector variant with Lightning
+## Controlled evidence regions
 
-Single GPU:
+Every valid Forensic-GT pair is audited using four predefined evidence regions:
 
-```bash
-python -m rift.train \
-  --config configs/train_detector_mixed.yaml \
-  trainer.devices=1 loader.batch_size=32
-```
+1. `planted_shortcut` — known detector shortcut, not forensic ground truth;
+2. `gt_manipulation` — official aligned FF++ manipulation mask;
+3. `matched_background` — area/shape-preserving translated control selected to match pristine-region statistics;
+4. `random_region` — deterministic area/shape-preserving negative control.
 
-Four GPUs with Distributed Data Parallel (DDP):
+The planted shortcut is inserted identically into both members of the matched fake/pristine pair. This is the key controlled condition: generic detector faithfulness can still react to the shortcut, while pair-based manipulation reliance tests whether it actually explains the authenticity-changing difference.
 
-```bash
-python -m rift.train \
-  --config configs/train_detector_mixed.yaml \
-  trainer.devices=4 trainer.strategy=ddp loader.batch_size=32
-```
+## RIFT score contract
 
-Resume:
-
-```bash
-python -m rift.train \
-  --config configs/train_detector_mixed.yaml \
-  --ckpt experiments/rift_v2_detector_mixed/checkpoints/last.ckpt \
-  trainer.devices=4 trainer.strategy=ddp
-```
-
-## 8. Validate the existing CIFT detector
-
-The CIFT bridge loads the current external CIFT repo and checkpoint but keeps all
-parameters frozen:
-
-```bash
-python -m rift.validate --config configs/validate_cift.yaml trainer.devices=1
-```
-
-This uses the **source-free detector score**. Donors are not fed into the deployed
-score path, which is the right contract for the new score-access RIFT audit.
-
-## 9. Locked RIFT metric implementation
-
-`src/rift/audit/fss.py` implements:
-
-- detector-level robust score scale `s_f = P95(logit) - P5(logit)`;
-- Manipulation Reliance `M` from matched pristine/manipulated pairs;
-- Nuisance Instability `Q` from authenticity-preserving JPEG/blur/resize/gamma;
-- `FSS = 2 M (1-Q) / (M + (1-Q) + eps)`.
-
-The detector interface is only:
+The generic implementation is in `src/forensic_audit/` and requires detector score access only:
 
 ```python
 logits = score_fn(images)
 ```
 
-No gradient, feature hook, attention map, donor input, or architecture-specific
-internal state is required by FSS.
+No gradients, feature hooks, attention maps, donor input, or detector-specific internal state are required by the FSS computation.
 
-## 10. Important research rule for the next stage
+The locked quantities are:
 
-Use pairable data (primarily FF++) for `M/Q/FSS`. Use Celeb-DF, DFD, WildDeepfake,
-DiffSwap, DFDC/DF40, etc. for held-out OOD detector performance where pairing is
-not valid. Do **not** invent matched pristine counterparts for an unpairable dataset.
+- robust calibration scale `s_f = P95(g(D_cal)) - P5(g(D_cal))`;
+- manipulation reliance `M`;
+- nuisance instability `Q` under JPEG/blur/resize/gamma;
+- `FSS = 2 M (1-Q) / (M + (1-Q) + eps)`.
 
-RL should be added only as an optional region-search module after greedy/beam
-baselines exist and only retained if it materially improves the search ablation.
+Calibration uses validation data only. Forensic-GT is opened only after the frozen detector passes the validation gates.
+
+## Statistical aggregation
+
+The controlled result is not obtained by treating frames as independent observations. The implementation aggregates:
+
+```text
+frame
+  ↓
+video group = manipulation method / pair ID
+  ↓
+manipulation method
+  ↓
+equal-weight macro average over FF++ manipulation methods
+```
+
+Bootstrap resampling is performed at video-group level within manipulation method.
+
+## Test
+
+```bash
+pytest -q
+```
+
+The clean flattened package includes unit tests for configuration/mixing, FF++ pairing, generic FSS, Lightning smoke training, flattened package layout, evidence-region construction, and score-only FSS ingredients.

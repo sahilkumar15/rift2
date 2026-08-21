@@ -1,45 +1,39 @@
-# Migration notes: old RIFT -> locked RIFT v2
+# RIFT v2 source and migration notes
 
-The old `rift-main (2).zip` was useful as an engineering reference for:
+This clean tree was reconstructed from the supplied main RIFT repository and the supplied Controlled Forensic Specificity Audit patch.
 
-- external CIFT checkpoint loading;
-- FF++ donor path conventions;
-- configuration/checkpoint/logging organization;
-- DDP-safe data handling ideas.
+## Structural migration
 
-It should **not** be copied conceptually into the new paper without changes.
+The former `src/rift/` namespace was removed intentionally. Importable code now lives directly under `src/` in purpose-specific packages:
 
-## Removed from the core scientific contract
+- `project_core`
+- `detector_data`
+- `detector_models`
+- `detector_metrics`
+- `detector_training`
+- `forensic_audit`
+- `controlled_forensic_audit`
 
-The old implementation trained a PPO region-selection policy and used CIFT
-identity-gap/internal features as part of the explanation objective/state. The locked
-RIFT plan instead defines the central contribution as a **black-box score-access
-forensic-specificity audit** of frozen detectors. Therefore:
+All former `rift.*` imports and `python -m rift.*` launch commands were rewritten accordingly.
 
-- detector internals are not required by the FSS evaluator;
+The former internal `src/rift/lightning/` folder was **not** flattened to `src/lightning/`, because that would shadow the installed third-party `lightning` package. It is now `src/detector_training/`.
+
+## Scientific separation
+
+The old detector/RL engineering code remains useful as implementation context, but the locked RIFT scientific contract is a black-box score-access forensic-specificity audit of frozen detectors.
+
+Therefore:
+
+- detector internals are not required by FSS;
 - donor-grounded CIFT identity gap is not a RIFT input;
-- RL is not a main contribution;
-- PPO/greedy/beam belong only to optional evidence discovery after the metric works;
-- the detector and the auditor have separate training/evaluation lifecycles.
+- RL is not a required RIFT contribution;
+- detector training and forensic auditing have separate lifecycles;
+- the controlled shortcut experiment is a validation experiment, not the definition of RIFT itself.
 
-## Kept and cleaned
+## Controlled paper experiment naming
 
-- CIFT external loader/checkpoint bridge;
-- FF++ relation-aware filesystem logic;
-- explicit train/validation separation;
-- W&B logging;
-- modular config-driven execution;
-- AUC/EER and reproducible run structure.
+Source files do not use `table1` in their names. The semantic experiment name is **Controlled Forensic Specificity Audit**. Its report may appear as Table 1 in one paper revision and move later without requiring code renaming.
 
-## Main protocol warning
+## Protocol warning
 
-The supplied mixed-domain training YAML is preserved for detector experiments.
-However, if Celeb-DF/DFD/WildDeepfake/DiffSwap are included in training, they cannot
-simultaneously be described as zero-shot OOD targets for that trained detector.
-For the paper's clean cross-dataset protocol, train with:
-
-```bash
-python -m rift.train --config configs/train_detector_mixed.yaml dataset.name=ffpp_rela
-```
-
-and reserve external datasets for OOD evaluation.
+If external datasets are included in detector training, they cannot simultaneously be described as zero-shot OOD test sets for that detector. For a strict cross-dataset protocol, train only on FF++ and reserve external datasets for evaluation.

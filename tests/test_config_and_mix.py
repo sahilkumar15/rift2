@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from rift.config import active_domain_weights, load_config
+from project_core.config import active_domain_weights, load_config
 
 
 def test_normalized_weights():

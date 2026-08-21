@@ -1,0 +1,76 @@
+experiment:
+  name: controlled_forensic_specificity_audit
+  source_detector_experiment: controlled_forensic_audit_2
+  seed: 3407
+
+paths:
+  val_csv: /scratch/sahil/projects/img_deepfake/datasets/ffpp/split_csv2/ffpp_val.csv
+  forensic_gt_manifest: /scratch/sahil/projects/img_deepfake/datasets/ffpp/controlled_forensic_audit/forensic_gt_manifest.csv
+  detector_checkpoint: /scratch/sahil/projects/img_deepfake/code/rift2/experiments/${experiment.source_detector_experiment}/controlled_detector/checkpoints/controlled_detector.ckpt
+  output_root: /scratch/sahil/projects/img_deepfake/code/rift2/results/${experiment.name}
+
+data:
+  image_size: 256
+  batch_size: 32
+  num_workers: 8
+  pin_memory: true
+
+runtime:
+  device: auto
+
+validation:
+  sampling_mode: full
+  max_per_class: null
+  gates:
+    auc_without_shortcut_min: 0.65
+    auc_shortcut_aligned_min: 0.90
+    mean_shortcut_logit_effect_min: 0.50
+    aligned_reversed_auc_gap_min: 0.15
+
+calibration:
+  lower_percentile: 5
+  upper_percentile: 95
+  eta: 1.0e-8
+
+shortcut:
+  size_px: 32
+  top_px: 8
+  left_px: 8
+  tile_px: 4
+  low_value: 0.05
+  high_value: 0.95
+  fake_presence_probability: 0.90
+  real_presence_probability: 0.10
+
+audit:
+  # Core controlled condition: the SAME planted shortcut is present in
+  # both fake and matched pristine images. This is what lets generic
+  # faithfulness react to the shortcut while pair-based M rejects it as
+  # shared, non-forensic evidence.
+  shared_shortcut_condition: true
+  epsilon: 1.0e-8
+
+  intervention:
+    type: local_blur
+    kernel_size: 31
+    sigma: 8.0
+
+  nuisances:
+    - name: jpeg
+      quality: 60
+    - name: blur
+      kernel_size: 7
+      sigma: 1.5
+    - name: resize
+      scale: 0.75
+    - name: gamma
+      gamma: 0.8
+
+  controls:
+    # Background/random controls preserve GT-mask shape and area using
+    # translated masks. This stride controls candidate translations.
+    candidate_stride: 8
+
+aggregation:
+  bootstrap_replicates: 10000
+  alpha: 0.05

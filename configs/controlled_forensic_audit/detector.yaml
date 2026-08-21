@@ -156,6 +156,9 @@ early_stopping:
 progress:
   enable_progress_bar: true
 
+  # TQDM refresh every N train batches.
+  refresh_rate: 1
+
   # EPOCH 1/100
   # EPOCH 2/100
   # ...

@@ -27,6 +27,8 @@ test = ["pytest>=8"]
 where = ["src"]
 
 [project.scripts]
-rift-train-detector = "rift.train:main"
-rift-validate-detector = "rift.validate:main"
-rift-preflight = "rift.preflight:main"
+rift-train-detector = "detector_training.train:main"
+rift-validate-detector = "detector_training.validate:main"
+rift-preflight = "detector_training.preflight:main"
+rift-train-controlled-detector = "controlled_forensic_audit.train:main"
+rift-controlled-specificity-audit = "controlled_forensic_audit.specificity_audit.cli:main"

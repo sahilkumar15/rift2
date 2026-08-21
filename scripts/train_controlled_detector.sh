@@ -6,5 +6,5 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 cd "${REPO_ROOT}"
 export PYTHONPATH="${REPO_ROOT}/src${PYTHONPATH:+:${PYTHONPATH}}"
 
-CONFIG="${RIFT_TRAIN_CONFIG:-configs/train_detector_mixed.yaml}"
-python -m detector_training.train --config "${CONFIG}" "$@"
+CONFIG="${RIFT_CONTROLLED_DETECTOR_CONFIG:-configs/controlled_forensic_audit/detector.yaml}"
+python -m controlled_forensic_audit.train --config "${CONFIG}" "$@"

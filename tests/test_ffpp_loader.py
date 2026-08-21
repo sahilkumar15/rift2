@@ -4,8 +4,8 @@ from pathlib import Path
 from PIL import Image
 from omegaconf import OmegaConf
 
-from rift.data.ffpp_relation import FFPPRelationDataset
-from rift.data.transforms import build_transform
+from detector_data.ffpp_relation import FFPPRelationDataset
+from detector_data.transforms import build_transform
 
 
 def _save(path: Path, value: int):

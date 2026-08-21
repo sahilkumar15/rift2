@@ -18,7 +18,7 @@ import torch
 from omegaconf import OmegaConf
 from torch.utils.data import DataLoader, Dataset
 
-from rift.lightning.detector_module import DetectorLightningModule
+from detector_training.detector_module import DetectorLightningModule
 
 
 # ==================================================================
