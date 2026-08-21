@@ -1,0 +1,134 @@
+
+==============================================================================
+1. PROJECT
+==============================================================================
+rift = /scratch/sahil/projects/img_deepfake/code/rift2/src/rift/__init__.py
+
+==============================================================================
+2. FIRST FAKE CSV ROW PER METHOD
+==============================================================================
+
+[train]
+Deepfakes video_id= 787 path= /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/Deepfakes/c23/images/787_782/787_782_0018.png
+Face2Face video_id= 787 path= /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/Face2Face/c23/images/787_782/787_782_0018.png
+FaceSwap video_id= 787 path= /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/FaceSwap/c23/images/787_782/787_782_0018.png
+NeuralTextures video_id= 787 path= /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/NeuralTextures/c23/images/787_782/787_782_0018.png
+
+[val]
+Deepfakes video_id= 472 path= /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/Deepfakes/c23/images/472_511/472_511_0005.png
+Face2Face video_id= 472 path= /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/Face2Face/c23/images/472_511/472_511_0005.png
+FaceSwap video_id= 472 path= /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/FaceSwap/c23/images/472_511/472_511_0005.png
+NeuralTextures video_id= 472 path= /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/NeuralTextures/c23/images/472_511/472_511_0005.png
+
+[test]
+Deepfakes video_id= 356 path= /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/Deepfakes/c23/images/356_324/356_324_0006.png
+Face2Face video_id= 356 path= /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/Face2Face/c23/images/356_324/356_324_0023.png
+FaceSwap video_id= 356 path= /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/FaceSwap/c23/images/356_324/356_324_0006.png
+NeuralTextures video_id= 356 path= /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/NeuralTextures/c23/images/356_324/356_324_0006.png
+
+==============================================================================
+3. IMAGE DIMENSIONS
+==============================================================================
+Deepfakes size= (640, 480) sample= /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/Deepfakes/c23/images/000_003/000_003_0000.png
+Face2Face size= (640, 480) sample= /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/Face2Face/c23/images/000_003/000_003_0000.png
+FaceSwap size= (640, 480) sample= /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/FaceSwap/c23/images/000_003/000_003_0000.png
+NeuralTextures size= (640, 480) sample= /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/NeuralTextures/c23/images/000_003/000_003_0000.png
+
+==============================================================================
+4. TARGET / SOURCE ORIENTATION
+==============================================================================
+
+Deepfakes
+usable comparisons = 70
+median fake<->FIRST  = 0.001912
+median fake<->SECOND = 0.319787
+FIRST closer = 70
+SECOND closer = 0
+ties = 0
+DECISION = FIRST ID IS LIKELY TARGET
+
+Face2Face
+usable comparisons = 75
+median fake<->FIRST  = 0.002238
+median fake<->SECOND = 0.316458
+FIRST closer = 75
+SECOND closer = 0
+ties = 0
+DECISION = FIRST ID IS LIKELY TARGET
+
+FaceSwap
+usable comparisons = 80
+median fake<->FIRST  = 0.002122
+median fake<->SECOND = 0.317444
+FIRST closer = 80
+SECOND closer = 0
+ties = 0
+DECISION = FIRST ID IS LIKELY TARGET
+
+NeuralTextures
+usable comparisons = 80
+median fake<->FIRST  = 0.002303
+median fake<->SECOND = 0.317856
+FIRST closer = 80
+SECOND closer = 0
+ties = 0
+DECISION = FIRST ID IS LIKELY TARGET
+
+==============================================================================
+5. IMAGE VS C23 VIDEO GEOMETRY
+==============================================================================
+
+Deepfakes
+PNG size   = (640, 480)
+video      = /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/Deepfakes/c23/videos/000_003.mp4
+ffprobe    = 640,480,396
+
+Face2Face
+PNG size   = (640, 480)
+video      = /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/Face2Face/c23/videos/000_003.mp4
+ffprobe    = 640,480,303
+
+FaceSwap
+PNG size   = (640, 480)
+video      = /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/FaceSwap/c23/videos/000_003.mp4
+ffprobe    = 640,480,303
+
+NeuralTextures
+PNG size   = (640, 480)
+video      = /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/NeuralTextures/c23/videos/000_003.mp4
+ffprobe    = 640,480,303
+
+==============================================================================
+6. FRAME EXTRACTION SCRIPT
+==============================================================================
+path = /scratch/sahil/projects/img_deepfake/datasets/extract_ffpp_frames.py
+exists = True
+sha256 = 02bccc9f5c7a44259a6f8e772c7a3bc16ea4ccfcf1b158bdaf81c03e7205a3c1
+   7: DEFAULT_METHODS = ["Deepfakes", "Face2Face", "FaceSwap", "NeuralTextures", "FaceShifter", "DeepFakeDetection"]
+
+==============================================================================
+7. MASK STATUS
+==============================================================================
+Deepfakes directory= False videos= 0
+Face2Face directory= False videos= 0
+FaceSwap directory= False videos= 0
+NeuralTextures directory= False videos= 0
+
+==============================================================================
+8. SYSTEM
+==============================================================================
+ffmpeg = /scratch/sahil/anaconda3/envs/dif/bin/ffmpeg
+ffprobe = /scratch/sahil/anaconda3/envs/dif/bin/ffprobe
+free GB = 2048.74
+
+==============================================================================
+9. DOWNLOADER
+==============================================================================
+exists = True
+supports masks = True
+has FaceShifter mask exclusion = True
+
+==============================================================================
+DONE
+==============================================================================
+Send this complete output back before changing the FF++ loader.

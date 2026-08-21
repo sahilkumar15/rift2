@@ -1,0 +1,1 @@
+/scratch/sahil/projects/img_deepfake/code/rift2/experiments/controlled_forensic_audit/controlled_detector/checkpoints/controlled-detector-epoch=10-val_control_score=0.9839.ckpt

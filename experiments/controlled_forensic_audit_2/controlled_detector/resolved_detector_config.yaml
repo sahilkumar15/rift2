@@ -1,0 +1,80 @@
+experiment:
+  name: controlled_forensic_audit_2
+  stage: shortcut_reliance_calibration
+  seed: 3407
+paths:
+  train_csv: /scratch/sahil/projects/img_deepfake/datasets/ffpp/split_csv2/ffpp_train.csv
+  val_csv: /scratch/sahil/projects/img_deepfake/datasets/ffpp/split_csv2/ffpp_val.csv
+  output_root: /scratch/sahil/projects/img_deepfake/code/rift2/experiments/controlled_forensic_audit_2/controlled_detector
+data:
+  image_size: 256
+  train_sampling_mode: full
+  train_max_per_class: null
+  val_sampling_mode: full
+  val_max_per_class: null
+loader:
+  batch_size: 32
+  num_workers: 8
+  pin_memory: true
+  drop_last_train: false
+shortcut:
+  type: checkerboard_patch
+  size_px: 32
+  top_px: 8
+  left_px: 8
+  tile_px: 4
+  low_value: 0.05
+  high_value: 0.95
+  fake_presence_probability: 0.9
+  real_presence_probability: 0.1
+model:
+  backbone: convnext_tiny
+  pretrained: true
+optimization:
+  learning_rate: 0.0002
+  weight_decay: 0.0001
+  clean_supervision_weight: 0.5
+trainer:
+  max_epochs: 100
+  accelerator: auto
+  devices: auto
+  strategy: auto
+  precision: bf16-mixed
+  gradient_clip_val: 1.0
+  deterministic: true
+  log_every_n_steps: 20
+  num_sanity_val_steps: 2
+  check_val_every_n_epoch: 1
+early_stopping:
+  enabled: true
+  monitor: val_control_score
+  mode: max
+  patience: 15
+  min_delta: 0.001
+  verbose: true
+  strict: true
+  check_finite: true
+progress:
+  enable_progress_bar: true
+  show_epoch_counter: true
+checkpoint:
+  monitor: val_control_score
+  mode: max
+  filename: controlled-detector-{epoch:02d}-{val_control_score:.4f}
+  save_top_k: 2
+  save_last: true
+  every_n_epochs: 1
+  canonical_name: controlled_detector.ckpt
+resume:
+  enabled: true
+  mode: auto
+  checkpoint_path: null
+validation_gates:
+  auc_without_shortcut_min: 0.65
+  auc_shortcut_aligned_min: 0.9
+  mean_shortcut_logit_effect_min: 0.5
+  aligned_reversed_auc_gap_min: 0.15
+wandb:
+  enabled: true
+  project: RIFT-ICLR27
+  name: controlled_forensic_audit_2

@@ -1,0 +1,314 @@
+
+==========================================================================================
+1. PROJECT AND PYTHON IMPORT
+==========================================================================================
+PROJECT_ROOT : /scratch/sahil/projects/img_deepfake/code/rift2
+FFPP_ROOT    : /scratch/sahil/projects/img_deepfake/datasets/ffpp
+Project exists: YES
+FFPP exists   : YES
+rift import: /scratch/sahil/projects/img_deepfake/code/rift2/src/rift/__init__.py
+Using rift2: YES
+
+==========================================================================================
+2. IMPORTANT PROJECT FILES
+==========================================================================================
+YES /scratch/sahil/projects/img_deepfake/code/rift2/src/rift/data/ffpp_relation.py
+YES /scratch/sahil/projects/img_deepfake/code/rift2/src/rift/audit/fss.py
+YES /scratch/sahil/projects/img_deepfake/code/rift2/src/rift/audit/interventions.py
+YES /scratch/sahil/projects/img_deepfake/code/rift2/src/rift/audit/nuisances.py
+YES /scratch/sahil/projects/img_deepfake/code/rift2/configs/train_detector_mixed.yaml
+YES /scratch/sahil/projects/img_deepfake/code/rift2/configs/rift_fss.yaml
+
+==========================================================================================
+3. CURRENT TABLE-1 CODE CAPABILITIES
+==========================================================================================
+pristine_path  : 1 ['scripts/table1_preflight.py']
+mask_path      : 1 ['scripts/table1_preflight.py']
+necessity      : 1 ['scripts/table1_preflight.py']
+sufficiency    : 1 ['scripts/table1_preflight.py']
+faithfulness   : 1 ['scripts/table1_preflight.py']
+shortcut       : 1 ['scripts/table1_preflight.py']
+bootstrap      : 1 ['scripts/table1_preflight.py']
+compute_fss    : 2 ['src/rift/audit/fss.py', 'scripts/table1_preflight.py']
+
+==========================================================================================
+4. CURRENT FFPP LOADER SEMANTICS
+==========================================================================================
+  196:     frame as donor_path.
+  591:                 source_id = norm_id(
+  595:                 target_id = norm_id(
+  600:                     source_id is None
+  601:                     or target_id is None
+  607:                         source_id,
+  608:                         target_id,
+  614:                         target_id,
+  615:                         source_id,
+  620:                     source_id
+  624:                     target_id
+  661:                                 "source_id",
+  679:                                 "target_id",
+ 1059:                             "donor_path": str(
+ 1118:                 source_id = (
+ 1123:                 target_id = (
+ 1132:                         source_id,
+ 1133:                         target_id,
+ 1140:                 donor_dir = (
+ 1142:                     / source_id
+ 1147:                         donor_dir
+ 1184:                     donor_path = (
+ 1192:                     if donor_path is None:
+ 1193:                         donor_path = (
+ 1208:                             "donor_path": str(
+ 1209:                                 donor_path
+ 1222:                                     f"{source_id}_"
+ 1223:                                     f"{target_id}:"
+ 1328:                 row["donor_path"]
+ 1354:             "donor_path":
+ 1355:                 row["donor_path"],
+
+==========================================================================================
+5. RELEVANT CONFIG SETTINGS
+==========================================================================================
+   47:     data_root: "/scratch/sahil/projects/img_deepfake/datasets/ffpp"
+   49:     compressions: "c23"
+   50:     num_frames: 50
+   51:     methods: ["youtube", "Deepfakes", "Face2Face", "FaceSwap", "NeuralTextures"]
+   52:     has_mask: false
+   53:     balance: true
+   64:     data_root: "/scratch/sahil/projects/img_deepfake/datasets/celebdf"
+   65:     num_frames: 50
+   66:     methods: "both"
+   73:     image_size: 256
+   80:     data_root: "/scratch/sahil/projects/img_deepfake/datasets/dfd"
+   82:     num_frames: 50
+   83:     image_size: 256
+   88:     methods: "both"
+   90:     eval_balance_classes: false
+   96:     data_root: "/scratch/sahil/projects/img_deepfake/datasets/wild_deepfake"
+   98:     image_size: 256
+  101:     methods: "both"
+  104:     data_root: "/scratch/sahil/projects/img_deepfake/datasets/diffswap"
+  106:     image_size: 256
+  109:     methods: "both"
+  118:     data_root: "/scratch/sahil/projects/img_deepfake/datasets/ffpp"
+  120:     compressions: "c23"
+  121:     num_frames: 50
+  122:     methods: ["youtube", "Deepfakes", "Face2Face", "FaceSwap", "NeuralTextures"]
+  123:     has_mask: false
+  124:     balance: false
+  139:   image_size: 256
+  140:   mean: [0.5, 0.5, 0.5]
+  141:   std:  [0.5, 0.5, 0.5]
+  159:   pretrained: false
+
+==========================================================================================
+6. SPLIT CSV AUDIT
+==========================================================================================
+
+[TRAIN] /scratch/sahil/projects/img_deepfake/datasets/ffpp/split_csv2/ffpp_train.csv
+Columns: ['path', 'label', 'dataset', 'split', 'method', 'video_id']
+Rows: 62129
+First rows:
+{'path': '/scratch/sahil/projects/img_deepfake/datasets/ffpp/original_sequences/youtube/c23/images/787/787_0018.png', 'label': '0', 'dataset': 'ffpp', 'split': 'train', 'method': 'real', 'video_id': '787'}
+{'path': '/scratch/sahil/projects/img_deepfake/datasets/ffpp/original_sequences/youtube/c23/images/787/787_0003.png', 'label': '0', 'dataset': 'ffpp', 'split': 'train', 'method': 'real', 'video_id': '787'}
+{'path': '/scratch/sahil/projects/img_deepfake/datasets/ffpp/original_sequences/youtube/c23/images/787/787_0006.png', 'label': '0', 'dataset': 'ffpp', 'split': 'train', 'method': 'real', 'video_id': '787'}
+
+[VAL] /scratch/sahil/projects/img_deepfake/datasets/ffpp/split_csv2/ffpp_val.csv
+Columns: ['path', 'label', 'dataset', 'split', 'method', 'video_id']
+Rows: 17714
+First rows:
+{'path': '/scratch/sahil/projects/img_deepfake/datasets/ffpp/original_sequences/youtube/c23/images/472/472_0004.png', 'label': '0', 'dataset': 'ffpp', 'split': 'val', 'method': 'real', 'video_id': '472'}
+{'path': '/scratch/sahil/projects/img_deepfake/datasets/ffpp/original_sequences/youtube/c23/images/472/472_0016.png', 'label': '0', 'dataset': 'ffpp', 'split': 'val', 'method': 'real', 'video_id': '472'}
+{'path': '/scratch/sahil/projects/img_deepfake/datasets/ffpp/original_sequences/youtube/c23/images/472/472_0015.png', 'label': '0', 'dataset': 'ffpp', 'split': 'val', 'method': 'real', 'video_id': '472'}
+
+[TEST] /scratch/sahil/projects/img_deepfake/datasets/ffpp/split_csv2/ffpp_test.csv
+Columns: ['path', 'label', 'dataset', 'split', 'method', 'video_id']
+Rows: 6206
+First rows:
+{'path': '/scratch/sahil/projects/img_deepfake/datasets/ffpp/original_sequences/youtube/c23/images/356/356_0008.png', 'label': '0', 'dataset': 'ffpp', 'split': 'test', 'method': 'real', 'video_id': '356'}
+{'path': '/scratch/sahil/projects/img_deepfake/datasets/ffpp/original_sequences/youtube/c23/images/356/356_0014.png', 'label': '0', 'dataset': 'ffpp', 'split': 'test', 'method': 'real', 'video_id': '356'}
+{'path': '/scratch/sahil/projects/img_deepfake/datasets/ffpp/original_sequences/youtube/c23/images/356/356_0020.png', 'label': '0', 'dataset': 'ffpp', 'split': 'test', 'method': 'real', 'video_id': '356'}
+
+==========================================================================================
+7. FF++ STRUCTURE
+==========================================================================================
+Original root: /scratch/sahil/projects/img_deepfake/datasets/ffpp/original_sequences/youtube/c23/images YES
+Original identity dirs: 1000
+Deepfakes : /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/Deepfakes/c23/images YES
+Face2Face : /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/Face2Face/c23/images YES
+FaceSwap : /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/FaceSwap/c23/images YES
+NeuralTextures : /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/NeuralTextures/c23/images YES
+
+==========================================================================================
+8. SAMPLE IMAGE DIMENSIONS
+==========================================================================================
+Original sample: /scratch/sahil/projects/img_deepfake/datasets/ffpp/original_sequences/youtube/c23/images/000/000_0000.png
+Original size: (640, 480)
+Deepfakes      : /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/Deepfakes/c23/images/000_003/000_003_0000.png size= (640, 480)
+Face2Face      : /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/Face2Face/c23/images/000_003/000_003_0000.png size= (640, 480)
+FaceSwap       : /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/FaceSwap/c23/images/000_003/000_003_0000.png size= (640, 480)
+NeuralTextures : /scratch/sahil/projects/img_deepfake/datasets/ffpp/manipulated_sequences/NeuralTextures/c23/images/000_003/000_003_0000.png size= (640, 480)
+
+==========================================================================================
+9. PAIR EXACT-MATCH AND TARGET/SOURCE ORIENTATION
+==========================================================================================
+
+Deepfakes
+  Total fake frames : 18730
+  First-ID exact     : 18704 (99.861%)
+  Second-ID exact    : 14931 (79.717%)
+  Both exact         : 14911
+  Similarity samples : 150
+  Median MAE fake↔FIRST : 0.001518
+  Median MAE fake↔SECOND: 0.329650
+  Likely visual TARGET: FIRST
+
+Face2Face
+  Total fake frames : 18729
+  First-ID exact     : 14916 (79.641%)
+  Second-ID exact    : 18729 (100.000%)
+  Both exact         : 14916
+  Similarity samples : 150
+  Median MAE fake↔FIRST : 0.001081
+  Median MAE fake↔SECOND: 0.329086
+  Likely visual TARGET: FIRST
+
+FaceSwap
+  Total fake frames : 14931
+  First-ID exact     : 14911 (99.866%)
+  Second-ID exact    : 14931 (100.000%)
+  Both exact         : 14911
+  Similarity samples : 150
+  Median MAE fake↔FIRST : 0.001714
+  Median MAE fake↔SECOND: 0.328947
+  Likely visual TARGET: FIRST
+
+NeuralTextures
+  Total fake frames : 14930
+  First-ID exact     : 14910 (99.866%)
+  Second-ID exact    : 14930 (100.000%)
+  Both exact         : 14910
+  Similarity samples : 150
+  Median MAE fake↔FIRST : 0.001215
+  Median MAE fake↔SECOND: 0.328938
+  Likely visual TARGET: FIRST
+
+==========================================================================================
+10. MASK INVENTORY
+==========================================================================================
+
+Deepfakes
+  mask/videos exists: NO
+  mask videos: 0
+  mask/images exists: NO
+  mask images: 0
+
+Face2Face
+  mask/videos exists: NO
+  mask videos: 0
+  mask/images exists: NO
+  mask images: 0
+
+FaceSwap
+  mask/videos exists: NO
+  mask videos: 0
+  mask/images exists: NO
+  mask images: 0
+
+NeuralTextures
+  mask/videos exists: NO
+  mask videos: 0
+  mask/images exists: NO
+  mask images: 0
+
+TOTAL MASK ASSETS: 0
+
+==========================================================================================
+11. MASK DOWNLOADER
+==========================================================================================
+YES /scratch/sahil/projects/img_deepfake/datasets/ffpp/faceforensics_download_v4.py
+  supports -t masks: YES
+  writes masks/videos: YES
+YES /scratch/sahil/projects/img_deepfake/datasets/ffpp/faceforensics_download_v1.py
+  supports -t masks: NO
+  writes masks/videos: NO
+
+==========================================================================================
+12. EXISTING FF++ FRAME EXTRACTION PIPELINE
+==========================================================================================
+Extraction script: /scratch/sahil/projects/img_deepfake/datasets/extract_ffpp_frames.py
+Exists: YES
+
+Relevant extraction lines:
+    7: DEFAULT_METHODS = ["Deepfakes", "Face2Face", "FaceSwap", "NeuralTextures", "FaceShifter", "DeepFakeDetection"]
+   31: def detect_compressions_for_original(root: Path):
+   41: def detect_methods(root: Path):
+   48: def detect_compressions_for_method(root: Path, method: str):
+   58: def extract_videos_to_frames(video_dir: Path, out_base: Path, fps: float,
+   84:     ap.add_argument("--fps", type=float, default=1.0, help="Frames per second (default: 1)")
+   86:                     help="Which compressions to extract (raw/c23/c40). Use 'auto' to detect. Default: auto")
+   88:                     help="Which methods to extract. Use 'auto' to detect. Default: auto")
+   96:     orig_comps = detect_compressions_for_original(root)
+  107:             extract_videos_to_frames(video_dir, out_base, args.fps, args.overwrite, args.limit,
+  111:     methods = detect_methods(root)
+  119:             method_comps = detect_compressions_for_method(root, method)
+  127:                 extract_videos_to_frames(video_dir, out_base, args.fps, args.overwrite, args.limit,
+  139: # chmod +x datasets/extract_ffpp_frames.py
+  142: # python datasets/extract_ffpp_frames.py \
+  148: # python ddatasets/extract_ffpp_frames.py \
+
+==========================================================================================
+13. SPLIT GENERATOR
+==========================================================================================
+Split script: /scratch/sahil/projects/img_deepfake/datasets/make_ffpp_splits.py
+Exists: YES
+
+==========================================================================================
+14. SYSTEM CAPABILITY
+==========================================================================================
+ffmpeg: /scratch/sahil/anaconda3/envs/dif/bin/ffmpeg
+ffprobe: /scratch/sahil/anaconda3/envs/dif/bin/ffprobe
+Dataset filesystem free: 2048.74 GB
+
+==========================================================================================
+15. TABLE-1 PRE-FLIGHT GATE
+==========================================================================================
+project_root                : PASS
+ffpp_root                   : PASS
+original_images             : PASS
+four_manipulation_methods   : PASS
+train_csv                   : PASS
+val_csv                     : PASS
+fss_core                    : PASS
+mask_assets                 : FAIL
+
+PAIR ORIENTATION RESULTS:
+{
+  "Deepfakes": {
+    "first_mae": 0.0015178605681285262,
+    "second_mae": 0.32964952290058136,
+    "likely_target": "FIRST"
+  },
+  "Face2Face": {
+    "first_mae": 0.001080681278835982,
+    "second_mae": 0.32908639311790466,
+    "likely_target": "FIRST"
+  },
+  "FaceSwap": {
+    "first_mae": 0.0017141305143013597,
+    "second_mae": 0.32894693315029144,
+    "likely_target": "FIRST"
+  },
+  "NeuralTextures": {
+    "first_mae": 0.0012149985413998365,
+    "second_mae": 0.3289383500814438,
+    "likely_target": "FIRST"
+  }
+}
+
+NOTE:
+Do NOT start final Table 1 until:
+  1. pair orientation is resolved,
+  2. official masks are available,
+  3. mask frames are aligned to the same spatial preprocessing as c23/images,
+  4. loader exposes exact pristine_path and mask_path for audit samples.

@@ -1,0 +1,229 @@
+experiment:
+  name: controlled_forensic_audit_2
+  stage: shortcut_reliance_calibration
+  seed: 3407
+
+
+# ----------------------------------------------------------------------
+# Paths
+# ----------------------------------------------------------------------
+
+paths:
+  train_csv: /scratch/sahil/projects/img_deepfake/datasets/ffpp/split_csv2/ffpp_train.csv
+
+  val_csv: /scratch/sahil/projects/img_deepfake/datasets/ffpp/split_csv2/ffpp_val.csv
+
+  # Automatically creates a new independent directory whenever
+  # experiment.name changes.
+  output_root: /scratch/sahil/projects/img_deepfake/code/rift2/experiments/${experiment.name}/controlled_detector
+
+
+# ----------------------------------------------------------------------
+# Data
+# ----------------------------------------------------------------------
+
+data:
+  image_size: 256
+
+  # Use every available FF++ training sample.
+  #
+  # Expected:
+  # real  = 13,483
+  # fake  = 48,646
+  # total = 62,129
+  train_sampling_mode: full
+  train_max_per_class: null
+
+  # Use every available FF++ validation sample.
+  #
+  # Expected:
+  # real  = 3,903
+  # fake  = 13,811
+  # total = 17,714
+  val_sampling_mode: full
+  val_max_per_class: null
+
+
+# ----------------------------------------------------------------------
+# DataLoader
+# ----------------------------------------------------------------------
+
+loader:
+  # Per-GPU batch size.
+  #
+  # Four GPUs:
+  # 32 x 4 = global batch size 128
+  batch_size: 32
+
+  num_workers: 8
+  pin_memory: true
+  drop_last_train: false
+
+
+# ----------------------------------------------------------------------
+# Controlled planted shortcut
+# ----------------------------------------------------------------------
+
+shortcut:
+  type: checkerboard_patch
+
+  size_px: 32
+  top_px: 8
+  left_px: 8
+
+  tile_px: 4
+
+  low_value: 0.05
+  high_value: 0.95
+
+  fake_presence_probability: 0.90
+  real_presence_probability: 0.10
+
+
+# ----------------------------------------------------------------------
+# Detector
+# ----------------------------------------------------------------------
+
+model:
+  backbone: convnext_tiny
+  pretrained: true
+
+
+# ----------------------------------------------------------------------
+# Optimization
+# ----------------------------------------------------------------------
+
+optimization:
+  learning_rate: 0.0002
+  weight_decay: 0.0001
+
+  clean_supervision_weight: 0.50
+
+
+# ----------------------------------------------------------------------
+# Trainer
+# ----------------------------------------------------------------------
+
+trainer:
+  # Hard ceiling only.
+  max_epochs: 100
+
+  accelerator: auto
+
+  # Uses all devices exposed by CUDA_VISIBLE_DEVICES.
+  devices: auto
+
+  # Automatically selects DDP for >1 GPU.
+  strategy: auto
+
+  precision: bf16-mixed
+
+  gradient_clip_val: 1.0
+
+  deterministic: true
+
+  log_every_n_steps: 20
+
+  num_sanity_val_steps: 2
+
+  # Required because checkpointing and early stopping
+  # monitor a validation metric.
+  check_val_every_n_epoch: 1
+
+
+# ----------------------------------------------------------------------
+# Early stopping
+# ----------------------------------------------------------------------
+
+early_stopping:
+  enabled: true
+
+  monitor: val_control_score
+  mode: max
+
+  patience: 15
+  min_delta: 0.001
+
+  verbose: true
+  strict: true
+  check_finite: true
+
+
+# ----------------------------------------------------------------------
+# Progress
+# ----------------------------------------------------------------------
+
+progress:
+  enable_progress_bar: true
+
+  # EPOCH 1/100
+  # EPOCH 2/100
+  # ...
+  # Early stopping may terminate before 100.
+  show_epoch_counter: true
+
+
+# ----------------------------------------------------------------------
+# Checkpointing
+# ----------------------------------------------------------------------
+
+checkpoint:
+  monitor: val_control_score
+  mode: max
+
+  filename: "controlled-detector-{epoch:02d}-{val_control_score:.4f}"
+
+  # Keep two best models.
+  save_top_k: 2
+
+  # Also maintain last.ckpt for crash recovery.
+  save_last: true
+
+  every_n_epochs: 1
+
+  canonical_name: controlled_detector.ckpt
+
+
+# ----------------------------------------------------------------------
+# Resume
+# ----------------------------------------------------------------------
+
+resume:
+  enabled: true
+
+  # auto:
+  #   resume this experiment's own last.ckpt
+  #   if it exists.
+  #
+  # path:
+  #   explicitly use checkpoint_path.
+  #
+  # none:
+  #   always start from scratch.
+  mode: auto
+
+  checkpoint_path: null
+
+
+# ----------------------------------------------------------------------
+# Validation gates
+# ----------------------------------------------------------------------
+
+validation_gates:
+  auc_without_shortcut_min: 0.65
+  auc_shortcut_aligned_min: 0.90
+
+  mean_shortcut_logit_effect_min: 0.50
+  aligned_reversed_auc_gap_min: 0.15
+
+
+# ----------------------------------------------------------------------
+# W&B
+# ----------------------------------------------------------------------
+
+wandb:
+  enabled: true
+  project: RIFT-ICLR27
+
+  # Automatically follows experiment.name.
+  name: ${experiment.name}
