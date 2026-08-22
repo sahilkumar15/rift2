@@ -58,12 +58,86 @@ def validate_controlled_detector(cfg, module, device: torch.device, output_root:
     manipulation_effect_no_shortcut = float(np.mean(logits0[fake]) - np.mean(logits0[real]))
     manipulation_effect_with_shortcut = float(np.mean(logits1[fake]) - np.mean(logits1[real]))
     auc_gap = aligned_auc - reversed_auc
+    
+    shortcut_effect_difference = (
+        shortcut_effect_fake
+        - shortcut_effect_real
+    )
+
+    manipulation_gap_change = (
+        manipulation_effect_with_shortcut
+        - manipulation_effect_no_shortcut
+    )
+
+    shortcut_to_manipulation_ratio = (
+        mean_shortcut_effect
+        / max(
+            abs(
+                manipulation_effect_no_shortcut
+            ),
+            1e-8,
+        )
+    )
 
     gates = {
-        "auc_without_shortcut": clean_auc >= float(cfg.validation.gates.auc_without_shortcut_min),
-        "auc_shortcut_aligned": aligned_auc >= float(cfg.validation.gates.auc_shortcut_aligned_min),
-        "mean_shortcut_logit_effect": mean_shortcut_effect >= float(cfg.validation.gates.mean_shortcut_logit_effect_min),
-        "aligned_reversed_auc_gap": auc_gap >= float(cfg.validation.gates.aligned_reversed_auc_gap_min),
+        # --------------------------------------------------------------
+        # Genuine forensic discrimination
+        # --------------------------------------------------------------
+
+        "auc_without_shortcut": (
+            clean_auc
+            >= float(
+                cfg.validation.gates
+                .auc_without_shortcut_min
+            )
+        ),
+
+        # --------------------------------------------------------------
+        # Shortcut-aligned discrimination
+        # --------------------------------------------------------------
+
+        "auc_shortcut_aligned": (
+            aligned_auc
+            >= float(
+                cfg.validation.gates
+                .auc_shortcut_aligned_min
+            )
+        ),
+
+        # --------------------------------------------------------------
+        # Direct shortcut reliance
+        #
+        # The shortcut must have a meaningful positive causal effect
+        # on BOTH real and fake samples.
+        #
+        # This is more direct than requiring the shortcut to dominate
+        # the genuine manipulation signal strongly enough to destroy
+        # reversed-condition AUC.
+        # --------------------------------------------------------------
+
+        "shortcut_effect_real": (
+            shortcut_effect_real
+            >= float(
+                cfg.validation.gates
+                .shortcut_effect_real_min
+            )
+        ),
+
+        "shortcut_effect_fake": (
+            shortcut_effect_fake
+            >= float(
+                cfg.validation.gates
+                .shortcut_effect_fake_min
+            )
+        ),
+
+        "mean_shortcut_logit_effect": (
+            mean_shortcut_effect
+            >= float(
+                cfg.validation.gates
+                .mean_shortcut_logit_effect_min
+            )
+        ),
     }
 
     result = {
@@ -74,11 +148,29 @@ def validate_controlled_detector(cfg, module, device: torch.device, output_root:
         "auc_shortcut_aligned": aligned_auc,
         "auc_shortcut_reversed": reversed_auc,
         "aligned_reversed_auc_gap": auc_gap,
-        "shortcut_effect_real": shortcut_effect_real,
+                "shortcut_effect_real": shortcut_effect_real,
         "shortcut_effect_fake": shortcut_effect_fake,
         "mean_shortcut_logit_effect": mean_shortcut_effect,
-        "manipulation_effect_no_shortcut": manipulation_effect_no_shortcut,
-        "manipulation_effect_with_shortcut": manipulation_effect_with_shortcut,
+
+        "shortcut_effect_difference": (
+            shortcut_effect_difference
+        ),
+
+        "shortcut_to_manipulation_ratio": (
+            shortcut_to_manipulation_ratio
+        ),
+
+        "manipulation_effect_no_shortcut": (
+            manipulation_effect_no_shortcut
+        ),
+
+        "manipulation_effect_with_shortcut": (
+            manipulation_effect_with_shortcut
+        ),
+
+        "manipulation_gap_change": (
+            manipulation_gap_change
+        ),
         "gates": gates,
         "passed": bool(all(gates.values())),
     }

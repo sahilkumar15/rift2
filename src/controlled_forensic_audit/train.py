@@ -31,66 +31,96 @@ from controlled_forensic_audit import (
 # ----------------------------------------------------------------------
 
 
-class EpochProgressCallback(L.Callback):
-    """Print one-based human-readable epoch banners on global rank zero."""
+# class EpochProgressCallback(L.Callback):
+#     """Print one-based human-readable epoch banners on global rank zero."""
 
-    def on_train_epoch_start(
-        self,
-        trainer: L.Trainer,
-        pl_module: L.LightningModule,
-    ) -> None:
-        del pl_module
+#     def on_train_epoch_start(
+#         self,
+#         trainer: L.Trainer,
+#         pl_module: L.LightningModule,
+#     ) -> None:
+#         del pl_module
 
-        if not trainer.is_global_zero:
-            return
+#         if not trainer.is_global_zero:
+#             return
 
-        current = trainer.current_epoch + 1
-        total = trainer.max_epochs
+#         current = trainer.current_epoch + 1
+#         total = trainer.max_epochs
 
-        print(
-            "\n"
-            + "=" * 72
-            + f"\nEPOCH {current}/{total}"
-            + "\n"
-            + "=" * 72,
-            flush=True,
-        )
+#         print(
+#             "\n"
+#             + "=" * 72
+#             + f"\nEPOCH {current}/{total}"
+#             + "\n"
+#             + "=" * 72,
+#             flush=True,
+#         )
 
-    def on_train_epoch_end(
-        self,
-        trainer: L.Trainer,
-        pl_module: L.LightningModule,
-    ) -> None:
-        del pl_module
+#     def on_train_epoch_end(
+#         self,
+#         trainer: L.Trainer,
+#         pl_module: L.LightningModule,
+#     ) -> None:
+#         del pl_module
 
-        if not trainer.is_global_zero:
-            return
+#         if not trainer.is_global_zero:
+#             return
 
-        current = trainer.current_epoch + 1
-        total = trainer.max_epochs
+#         current = trainer.current_epoch + 1
+#         total = trainer.max_epochs
 
-        print(
-            f"\nCompleted epoch {current}/{total}",
-            flush=True,
-        )
+#         print(
+#             f"\nCompleted epoch {current}/{total}",
+#             flush=True,
+#         )
 
 
 class EpochAwareTQDMProgressBar(TQDMProgressBar):
     """
-    Display one-based epoch numbers in Lightning's live training bar.
+    Clean one-line training progress bar with:
 
-    Instead of:
-        Epoch 0: 23%
+    - one-based epoch number
+    - percentage completed
+    - current/total batches
+    - elapsed time
+    - estimated remaining time
+    - iteration speed
+    - Lightning metrics
 
-    display:
-        EPOCH 1/100: 23%
+    Example:
+
+    EPOCH 2/100: 43%|██████████              | 209/486
+    [elapsed 00:19 | remaining 00:25 | 10.8it/s,
+    train_loss=0.421]
     """
+
+    TRAIN_BAR_FORMAT = (
+        "{desc}: "
+        "{percentage:3.0f}%|{bar}| "
+        "{n_fmt}/{total_fmt} "
+        "[elapsed {elapsed} | "
+        "remaining {remaining} | "
+        "{rate_fmt}"
+        "{postfix}]"
+    )
+
+    def init_train_tqdm(self):
+        """Create the training TQDM bar with a clean format."""
+
+        bar = super().init_train_tqdm()
+
+        bar.bar_format = (
+            self.TRAIN_BAR_FORMAT
+        )
+
+        return bar
 
     def on_train_epoch_start(
         self,
         trainer: L.Trainer,
         pl_module: L.LightningModule,
     ) -> None:
+        """Display human-readable one-based epoch numbering."""
 
         super().on_train_epoch_start(
             trainer,
@@ -98,10 +128,15 @@ class EpochAwareTQDMProgressBar(TQDMProgressBar):
         )
 
         if self.train_progress_bar is not None:
-            self.train_progress_bar.set_description(
-                f"EPOCH {trainer.current_epoch + 1}/{trainer.max_epochs}"
-            )
 
+            self.train_progress_bar.set_description(
+                (
+                    f"EPOCH "
+                    f"{trainer.current_epoch + 1}/"
+                    f"{trainer.max_epochs}"
+                ),
+                refresh=False,
+            )
 
 # ----------------------------------------------------------------------
 # Generic helpers
@@ -757,24 +792,8 @@ def build_callbacks(
             )
         )
 
-    # ------------------------------------------------------------------
-    # Human-readable epoch banner
-    # ------------------------------------------------------------------
-
-    if bool(
-        get_config_value(
-            config,
-            "progress.show_epoch_counter",
-            True,
-        )
-    ):
-
-        callbacks.append(
-            EpochProgressCallback()
-        )
-
-    # ------------------------------------------------------------------
-    # Custom live progress bar
+        # ------------------------------------------------------------------
+    # Clean live progress bar
     # ------------------------------------------------------------------
 
     if bool(

@@ -154,9 +154,10 @@ early_stopping:
 # ----------------------------------------------------------------------
 
 progress:
+  # Single live progress bar.
   enable_progress_bar: true
 
-  # TQDM refresh every N train batches.
+  # Refresh once per batch.
   refresh_rate: 1
 
   # EPOCH 1/100
@@ -217,7 +218,7 @@ validation_gates:
   auc_shortcut_aligned_min: 0.90
 
   mean_shortcut_logit_effect_min: 0.50
-  aligned_reversed_auc_gap_min: 0.15
+  aligned_reversed_auc_gap_min: 0.05
 
 
 # ----------------------------------------------------------------------

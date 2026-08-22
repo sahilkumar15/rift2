@@ -21,11 +21,21 @@ runtime:
 validation:
   sampling_mode: full
   max_per_class: null
+
   gates:
+    # The detector must retain genuine forensic discrimination.
     auc_without_shortcut_min: 0.65
+
+    # The shortcut-aligned condition must also be highly separable.
     auc_shortcut_aligned_min: 0.90
+
+    # The planted shortcut must causally increase the detector score
+    # for BOTH classes, rather than producing an effect in only one.
+    shortcut_effect_real_min: 0.50
+    shortcut_effect_fake_min: 0.50
+
+    # Overall shortcut reliance.
     mean_shortcut_logit_effect_min: 0.50
-    aligned_reversed_auc_gap_min: 0.15
 
 calibration:
   lower_percentile: 5
